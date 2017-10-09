@@ -7,28 +7,20 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Check;
-import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 @Entity
-@Check(constraints = "amount >= 0")
 public class Transaction {
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
-	@NotEmpty
+	@NotNull
 	private String source;
-	@NotEmpty
+	@NotNull
 	private String target;
+	@NotNull
 	private BigDecimal amount;
-	@CreatedDate
-	private Date creationDate;
-	@LastModifiedDate
-	private Date lastModified;
-
 
 	public String getSource() {
 		return source;
@@ -44,14 +36,6 @@ public class Transaction {
 
 	public void setTarget(String target) {
 		this.target = target;
-	}
-
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
 	}
 
 	public BigDecimal getAmount() {

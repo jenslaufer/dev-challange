@@ -1,5 +1,7 @@
 package com.awmd.challenge.transaction;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeSave;
@@ -9,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.awmd.challenge.account.Account;
 import com.awmd.challenge.account.AccountRepository;
-
 
 @Component
 @RepositoryEventHandler(Transaction.class)
@@ -21,11 +22,23 @@ public class TransactionHandler {
 
 	@HandleBeforeCreate
 	@Transactional
-	public void handleBeforeCreate(Transaction transaction) {
+	public void handleBeforeCreate(Transaction transaction)
+			throws NegativeAmountTransactionException, OverDraftException {
+		if (transaction.getAmount().doubleValue() < 0) {
+			throw new NegativeAmountTransactionException();
+		}
+
 		Account source = accountRepository.findOne(new Long(transaction.getSource()));
 		Account target = accountRepository.findOne(new Long(transaction.getTarget()));
-		source.setBalance(source.getBalance().subtract(transaction.getAmount()));
-		target.setBalance(target.getBalance().add(transaction.getAmount()));
+
+		double sourceBalance = source.getBalance().subtract(transaction.getAmount()).doubleValue();
+		if (sourceBalance < 0) {
+			throw new OverDraftException(source);
+		}
+		double targetBalance = target.getBalance().add(transaction.getAmount()).doubleValue();
+
+		source.setBalance(new BigDecimal(sourceBalance));
+		target.setBalance(new BigDecimal(targetBalance));
 		accountRepository.save(source);
 		accountRepository.save(target);
 	}
@@ -34,5 +47,5 @@ public class TransactionHandler {
 	public void handleBeforeSave(Transaction transaction) {
 		transaction = transactionRepository.findOne(transaction.getId());
 	}
-	
+
 }
