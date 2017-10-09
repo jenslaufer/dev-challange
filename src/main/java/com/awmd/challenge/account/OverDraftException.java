@@ -1,6 +1,4 @@
-package com.awmd.challenge.transaction;
-
-import com.awmd.challenge.account.Account;
+package com.awmd.challenge.account;
 
 public class OverDraftException extends Exception {
 
